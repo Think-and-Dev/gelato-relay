@@ -1,5 +1,4 @@
 import { ethers, providers } from 'ethers';
-import { createInstance } from './gelatoRelay';
 import { signMetaTxRequest } from './signer';
 
 async function sendMetaTx(counter: any, userProvider: providers.Web3Provider, chainId: number) {

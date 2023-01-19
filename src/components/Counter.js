@@ -1,11 +1,14 @@
 import { useEffect, useState, useContext } from 'react';
 import { incrementCounter } from '../eth/increment';
 import { EthereumContext } from "../eth/context";
+import { getTaskStatus } from "../eth/status";
+import { useInterval } from "../hooks/useInterval";
 import { toast } from 'react-toastify';
 import { ethers } from 'ethers';
 
 export default function Counter() {
   const [submitting, setSubmitting] = useState(false);
+  const [taskId, setTaskId] = useState(undefined);
   const [userCount, setUserCount] = useState(undefined);
   const [userAddress, setUserAddress] = useState(undefined);
   const [userProvider, setUserProvider] = useState(undefined);
@@ -37,16 +40,28 @@ export default function Counter() {
       connectWallet();
     }, [window.ethereum]);
 
-    useEffect(() => {
-      const getCount = async() => {  
-        if (window.ethereum && userAddress && counter) {
-          const count = await counter.contextCounter(userAddress);
-          setUserCount(count);
-        }
+    const getCount = async() => {  
+      if (window.ethereum && userAddress && counter) {
+        const count = await counter.contextCounter(userAddress);
+        setUserCount(count);
       }
-      
+    }
+
+    useEffect(() => {
       getCount();
     }, [window.ethereum, userAddress, counter]);
+
+    useInterval(async () => {
+      if (submitting && taskId) {
+        const status = await getTaskStatus(taskId);
+        console.log('status', status)
+        if (status && status.taskState !== "CheckPending") {
+          setSubmitting(false);
+          setTaskId(undefined);
+          getCount();
+        }
+      }
+    }, 3000);
   }
 
   const sendTx = async (event) => {
@@ -55,17 +70,12 @@ export default function Counter() {
     
     try {
       const response = await incrementCounter(counter, userProvider);
-      console.log('response', response)
       console.log('response.taskId', response.taskId)
-      const hash = response.hash;
-      const onClick = hash
-        ? () => window.open(`https://goerli.etherscan.io/tx/${hash}`)
-        : undefined;
-      toast('Transaction sent!', { type: 'info', onClick });
+      setTaskId(response.taskId);
+      toast('Transaction sent!', { type: 'info' });
     } catch(err) {
       console.error(err)
       toast(err.message || err, { type: 'error' });
-    } finally {
       setSubmitting(false);
     }
   }

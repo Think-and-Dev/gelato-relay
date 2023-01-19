@@ -19,6 +19,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/eth/context.js", "src/eth/gelatoRelay.js", "src/eth/increment.js", "src/eth/increment.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/eth/context.js", "src/eth/increment.js", "src/eth/increment.js", "src/hooks/useInterval.js"],
   "exclude": ["node_modules"]
 }

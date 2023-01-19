@@ -1,14 +1,11 @@
-import { RelayRequestOptions, RelayResponse, SponsoredCallERC2771Request } from "@gelatonetwork/relay-sdk";
+import { RelayRequestOptions, RelayResponse } from "@gelatonetwork/relay-sdk";
 import { SponsoredCallERC2771Struct, UserAuthSignature } from "@gelatonetwork/relay-sdk/dist/lib/sponsoredCallERC2771/types";
 import { ApiKey, RelayCall } from "@gelatonetwork/relay-sdk/dist/lib/types";
 import { postSponsoredCall } from "@gelatonetwork/relay-sdk/dist/utils";
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import deployJson from '../../../contracts/deploy.json';
-const CounterERC2771 = deployJson.CounterERC2771;
-
 // Base code from https://github.com/gelatodigital/relay-sdk/blob/02c146f984382d279b67dde6e8891ec31f0359e0/src/lib/sponsoredCallERC2771/index.ts#L77
-export default async function handler(req: NextApiRequest, res:  NextApiResponse) {
+export default async function relay(req: NextApiRequest, res:  NextApiResponse) {
   try {
     const API_KEY = process.env.RELAY_API_KEY;
     if (!API_KEY) throw new Error(`Missing relayer api key`);
