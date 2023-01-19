@@ -7,7 +7,7 @@ async function sendMetaTx(counter: any, userProvider: providers.Web3Provider, ch
 
   const signer = userProvider.getSigner();
   const from = await signer.getAddress();
-  const unsignedTx = await counter.populateTransaction.increment();
+  const unsignedTx = await counter.populateTransaction.incrementContext();
   
   const request = await signMetaTxRequest(userProvider, { 
     chainId: chainId,
@@ -18,11 +18,12 @@ async function sendMetaTx(counter: any, userProvider: providers.Web3Provider, ch
 
   console.log('request', request);
 
-  return fetch('/api/relay', {
+  const reponse = await fetch('/api/relay', {
     method: 'POST',
     body: JSON.stringify(request),
     headers: { 'Content-Type': 'application/json' },
   });
+  return reponse.json();
 }
 
 

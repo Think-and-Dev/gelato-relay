@@ -27,7 +27,7 @@ export default function Counter() {
         const signer = provider.getSigner();
         const address = await signer.getAddress();
         setUserAddress(address);
-        setUserProvider(userProvider);
+        setUserProvider(provider);
         const userNetwork = await provider.getNetwork();
         if (userNetwork.chainId !== 5) {
           alert(`Please switch to Goerli for signing`);
@@ -54,15 +54,16 @@ export default function Counter() {
     setSubmitting(true);
     
     try {
-      const response = await incrementCounter(registry, userProvider);
+      const response = await incrementCounter(counter, userProvider);
       console.log('response', response)
+      console.log('response.taskId', response.taskId)
       const hash = response.hash;
       const onClick = hash
         ? () => window.open(`https://goerli.etherscan.io/tx/${hash}`)
         : undefined;
       toast('Transaction sent!', { type: 'info', onClick });
-      nameInput.current.value = '';
     } catch(err) {
+      console.error(err)
       toast(err.message || err, { type: 'error' });
     } finally {
       setSubmitting(false);

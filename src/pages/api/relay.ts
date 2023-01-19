@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res:  NextApiResponse
     });
 
     console.log(`Sent meta-tx:`, postResponse);
-    return res.status(200).json(postResponse);
+    return res.status(200).json({ taskId: postResponse.taskId });
   } catch (error) {
     const errorMessage = (error as Error).message;
     throw new Error(`GelatoRelaySDK/sponsoredCallERC2771: Failed with error: ${errorMessage}`);
