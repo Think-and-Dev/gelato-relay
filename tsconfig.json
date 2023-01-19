@@ -19,6 +19,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/eth/context.js", "src/eth/forwarder.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/eth/context.js", "src/eth/gelatoRelay.js", "src/eth/increment.js", "src/eth/increment.js"],
   "exclude": ["node_modules"]
 }

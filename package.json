@@ -9,12 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@gelatonetwork/relay-sdk": "^3.1.0",
     "@next/font": "13.1.2",
     "@types/node": "18.11.18",
     "@types/react": "18.0.26",
     "@types/react-dom": "18.0.10",
-    "aws-sdk": "^2.1295.0",
-    "defender-relay-client": "^1.38.0",
     "eth-sig-util": "^3.0.1",
     "ethers": "^5.7.2",
     "lodash": "^4.17.20",

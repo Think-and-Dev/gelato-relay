@@ -1,44 +1,41 @@
-import { ethers } from 'ethers';
-import { DefenderRelaySigner, DefenderRelayProvider } from 'defender-relay-client/lib/ethers';
-
-import { ForwarderAbi } from '../../eth/forwarder';
-import deployJson from '../../../contracts/deploy.json';
+import { RelayRequestOptions, RelayResponse, SponsoredCallERC2771Request } from "@gelatonetwork/relay-sdk";
+import { SponsoredCallERC2771Struct, UserAuthSignature } from "@gelatonetwork/relay-sdk/dist/lib/sponsoredCallERC2771/types";
+import { ApiKey, RelayCall } from "@gelatonetwork/relay-sdk/dist/lib/types";
+import { postSponsoredCall } from "@gelatonetwork/relay-sdk/dist/utils";
 import { NextApiRequest, NextApiResponse } from 'next';
-const ForwarderAddress = deployJson.MinimalForwarder;
-const RegistryAddress = deployJson.Registry;
 
-async function relay(forwarder: any, request: any, signature: any, whitelist: any = undefined) {
-  // Decide if we want to relay this request based on a whitelist
-  const accepts = !whitelist || whitelist.includes(request.to);
-  if (!accepts) throw new Error(`Rejected request to ${request.to}`);
+import deployJson from '../../../contracts/deploy.json';
+const CounterERC2771 = deployJson.CounterERC2771;
 
-  // Validate request on the forwarder contract
-  const valid = await forwarder.verify(request, signature);
-  if (!valid) throw new Error(`Invalid request`);
-  
-  // Send meta-tx through relayer to the forwarder contract
-  const gasLimit = (parseInt(request.gas) + 50000).toString();
-  return await forwarder.execute(request, signature, { gasLimit });
-}
-
+// Base code from https://github.com/gelatodigital/relay-sdk/blob/02c146f984382d279b67dde6e8891ec31f0359e0/src/lib/sponsoredCallERC2771/index.ts#L77
 export default async function handler(req: NextApiRequest, res:  NextApiResponse) {
-  const API_KEY = process.env.RELAY_API_KEY;
-  if (!API_KEY) throw new Error(`Missing relayer api key`);
-  const API_SECRET = process.env.RELAY_API_SECRET;
-  if (!API_SECRET) throw new Error(`Missing relayer api secret`);
+  try {
+    const API_KEY = process.env.RELAY_API_KEY;
+    if (!API_KEY) throw new Error(`Missing relayer api key`);
 
-  const {request, signature} = req.body;
+    const { struct, signature } = req.body;
+    console.log(`Relaying`, req.body );
 
-  console.log(`Relaying`, request);
-  
-  // Initialize Relayer provider and signer, and forwarder contract
-  const credentials = { apiKey: API_KEY, apiSecret: API_SECRET };
-  const provider = new DefenderRelayProvider(credentials);
-  const signer = new DefenderRelaySigner(credentials, provider, { speed: 'fast' });
-  const forwarder = new ethers.Contract(ForwarderAddress, ForwarderAbi, signer);
-  
-  // Relay transaction!
-  const tx = await relay(forwarder, request, signature);
-  console.log(`Sent meta-tx: ${tx.hash}`);
-  return res.status(200).json({ txHash: tx.hash });
+    // If we want to define options
+    const options: RelayRequestOptions = {};
+    
+    const postResponse = await postSponsoredCall<
+      SponsoredCallERC2771Struct &
+        RelayRequestOptions &
+        UserAuthSignature &
+        ApiKey,
+      RelayResponse
+    >(RelayCall.SponsoredCallERC2771, {
+      ...struct,
+      ...options,
+      userSignature: signature,
+      sponsorApiKey: API_KEY,
+    });
+
+    console.log(`Sent meta-tx:`, postResponse);
+    return res.status(200).json(postResponse);
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    throw new Error(`GelatoRelaySDK/sponsoredCallERC2771: Failed with error: ${errorMessage}`);
+  }
 }
