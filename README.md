@@ -53,22 +53,21 @@ console.log(relayResponse);`
 ```
 
 As we need to use this in the backend we ended up using the Gelato API instead.
-Also, take into account that Gelato does not use the value field when relaying transactions so we can't relay ETH transfers.
+
+Take into account that Gelato does not use the value field when relaying transactions so we can't relay ETH transfers.
+
+Example addresses are sometimes wrong in gelato docs, trusted forwarder used by the SDK is 0xBf175FCC7086b4f9bd59d5EAE8eA67b8f940DE0d, but the deployed example contracts are pointing to the wrong address so we had to deploy new ones https://github.com/Think-and-Dev/gelato-relay-contract.
+In case you are getting errors that don't make much sense try reaching out to [their discord](https://discord.com/channels/733646962045222912/975978574857256980)
+
 
 ## Highlights
 
 The most important parts are:
-- The smart contract needs to implement EIP-2771 and we need a minimal forwarder [Registry.](./contracts/Registry.sol)sol](./contracts/Registry.sol)
+- The smart contract needs to implement [EIP-2771](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/metatx/ERC2771Context.sol) and we need to use [GelatoRelayERC2771 at 0xBf175FCC7086b4f9bd59d5EAE8eA67b8f940DE0don](https://github.com/gelatodigital/relay-context-contracts/blob/master/contracts/GelatoRelayContextERC2771.sol)
 - User signing of chain using signType_v4 at [signer.js](./src/eth/signer.js)
-- Send the signed message to the backend at [register.js](./src/eth/register.js), where is [sent to the relayer](./src/pages/api/relay.ts). Alternatively, if you don't want to use a backend you can use [Webhook](https://github.com/OpenZeppelin/workshops/blob/master/25-defender-metatx-api/app/src/eth/register.js#L10) and
-[Autotask](https://github.com/OpenZeppelin/workshops/blob/master/25-defender-metatx-api/autotasks/relay/index.js)
+- Send the signed message to the backend at [increment.js](./src/eth/increment.ts), where is [sent to the relayer](./src/pages/api/relay.ts).
 
 
 ## More info
-This code is based on [Workshop 01](https://github.com/OpenZeppelin/workshops/tree/master/01-defender-meta-txs) which makes use of `defender-client` on the Goerli network. Functionality is supported across any of Defender's [supported chains](https://docs.openzeppelin.com/defender/#networks) -- simply modify the code.
+This code is based on [Gelato [examples](https://docs.gelato.network/developer-services/relay/quick-start/sponsoredcallerc2771#example-code) which make use of `gelato sdk and relayers` on the Goerli network. Functionality is supported across any of Gelato's [supported chains](https://docs.gelato.network/developer-services/automate/supported-networks) -- simply modify the code.
 
-Live demo running at [defender-metatx-workshop-demo.openzeppelin.com](https://defender-metatx-workshop-demo.openzeppelin.com/).
-
-[Video tutorial](https://youtu.be/Bhz5LJbq9YY)
-
-[Written guide](https://docs.openzeppelin.com/defender/guide-metatx)
