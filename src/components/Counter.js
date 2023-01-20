@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 export default function Counter() {
   const [submitting, setSubmitting] = useState(false);
   const [taskId, setTaskId] = useState(undefined);
+  const [taskState, setTaskState] = useState(undefined);
   const [userCount, setUserCount] = useState(undefined);
   const [userAddress, setUserAddress] = useState(undefined);
   const [userProvider, setUserProvider] = useState(undefined);
@@ -54,11 +55,15 @@ export default function Counter() {
     useInterval(async () => {
       if (submitting && taskId) {
         const status = await getTaskStatus(taskId);
+        setTaskState(status.taskState)
         console.log('status', status)
         if (status && status.taskState !== "CheckPending") {
           setSubmitting(false);
           setTaskId(undefined);
           getCount();
+          if(status.taskState !== 'Cancelled'){
+            setTaskState(undefined)
+          }
         }
       }
     }, 3000);
@@ -67,6 +72,7 @@ export default function Counter() {
   const sendTx = async (event) => {
     event.preventDefault();
     setSubmitting(true);
+    setTaskState(undefined);
     
     try {
       const response = await incrementCounter(counter, userProvider);
@@ -93,10 +99,13 @@ export default function Counter() {
     <div className="Registrations">
       <h3>Current Count 📝</h3>
       {userCount === undefined && (
-        <span>Loading..</span>
+        <p>Loading..</p>
+      )}
+      { taskState && (
+        <p>{taskState}</p>
       )}
       {userCount && (
-        <span>{userCount.toString()}</span>
+        <p>{userCount.toString()}</p>
       )}
     </div>
   </div>
