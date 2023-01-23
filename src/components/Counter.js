@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
-import { incrementCounter } from '../eth/increment';
+import { useForm } from "react-hook-form";
+import { incrementCounter, incrementCounterByStep } from '../eth/increment';
 import { EthereumContext } from "../eth/context";
 import { getTaskStatus } from "../eth/status";
 import { useInterval } from "../hooks/useInterval";
@@ -14,6 +15,7 @@ export default function Counter() {
   const [userAddress, setUserAddress] = useState(undefined);
   const [userProvider, setUserProvider] = useState(undefined);
   const { counter } = useContext(EthereumContext);
+  const { handleSubmit } = useForm();
   
   if (typeof window !== "undefined") {
     useEffect(() => {
@@ -69,13 +71,23 @@ export default function Counter() {
     }, 3000);
   }
 
-  const sendTx = async (event) => {
-    event.preventDefault();
+  const onIncrementCounter = async () => {
+    const response = await incrementCounter(counter, userProvider);
+    sendTx(response)
+  }
+
+  const onIncrementCounterByStep = async () => {
+    const response = await incrementCounterByStep(counter, userProvider);
+    sendTx(response) 
+  }
+
+
+  const sendTx = async (response) => {
+    //event.preventDefault();
     setSubmitting(true);
     setTaskState(undefined);
     
     try {
-      const response = await incrementCounter(counter, userProvider);
       console.log('response.taskId', response.taskId)
       setTaskId(response.taskId);
       toast('Transaction sent!', { type: 'info' });
@@ -88,12 +100,17 @@ export default function Counter() {
 
   return <div>
     <div className="Container">
-      <form onSubmit={sendTx}>
+      <form>
         <label>Your address</label>
         <input placeholder="0x..." disabled value={userAddress || ''}/>
-        <button type="submit" disabled={submitting}>
+        <button type="submit" disabled={submitting} onClick={handleSubmit(onIncrementCounter)}>
           {submitting ? 'Increasing Counter...' : 'Increment Count'}
         </button>
+
+        <button type="submit" disabled={submitting} onClick={handleSubmit(onIncrementCounterByStep)}>
+          {submitting ? 'Increasing Counter By Step...' : 'Increment Count By Step'}
+        </button>
+
       </form>
     </div>
     <div className="Registrations">

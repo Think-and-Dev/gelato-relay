@@ -20,7 +20,8 @@ contract CounterERC2771 is ERC2771Context {
     // Here we have a mapping that maps a counter to an address
     mapping(address => uint256) public contextCounter;
 
-    event IncrementContextCounter(address _msgSender);
+    event IncrementContextCounter(address indexed _msgSender);
+    event IncrementContextCounterByStep(address indexed _msgSender, uint indexed step);
 
     // A modifier that only allows the trustedForwarder to call
     // the required target function: `incrementContext`
@@ -52,6 +53,12 @@ contract CounterERC2771 is ERC2771Context {
         contextCounter[_msgSender()]++;
         
         // Emitting an event for testing purposes
-        emit IncrementContextCounter(_msgSender);
+        emit IncrementContextCounter(_msgSender());
     }
+
+    function incrementContextByStep(uint256 step) external onlyTrustedForwarder {
+        contextCounter[_msgSender()] += step;
+        emit IncrementContextCounterByStep(_msgSender(), step);
+    }
+ 
 }
